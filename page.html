@@ -1,360 +1,498 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <base target="_top">
-    <title>Worker Management System</title>
-<style>
-:root {
-    --primary-color: #2a2d57;
-    --secondary-color: #6c5dd3;
-    --accent-color: #ff754b;
-    --background-color: #f6f5ff;
-    --text-color: #2a2d57;
-    --glass-bg: rgba(255, 255, 255, 0.9);
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WorkerSync</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6B2D2D; /* Burgundy */
+            --secondary-color: #1A5F3C; /* Forest green */
+            --accent-color: #D4A017; /* Antique gold */
+            --background-color: #F9F5F0; /* Off-white */
+            --card-bg: linear-gradient(135deg, #FFFFFF, #F2ECE4); /* White to parchment */
+            --text-color: #2A2A2A; /* Dark gray */
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --modal-bg: rgba(0, 0, 0, 0.6);
+            --border-color: #B8972E; /* Soft bronze */
+        }
 
-body { 
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(45deg, #f6f5ff 0%, #e9e7ff 100%);
-    min-height: 100vh;
-    max-width: 1200px; 
-    margin: 0 auto; 
-    padding: 40px; 
-    color: var(--text-color);
-    line-height: 1.6;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
 
-.section { 
-    background: var(--glass-bg);
-    backdrop-filter: blur(10px);
-    padding: 40px;
-    margin-bottom: 30px; 
-    border-radius: 20px; 
-    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    position: relative;
-    overflow: hidden;
-}
+        html, body {
+            width: 100%;
+            max-width: 100vw;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 2vw;
+        }
 
-.section::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(45deg, 
-        rgba(108, 93, 211, 0.1) 0%, 
-        rgba(255, 117, 75, 0.05) 50%, 
-        rgba(108, 93, 211, 0.1) 100%);
-    transform: rotate(45deg);
-    z-index: -1;
-}
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+            color: var(--primary-color);
+        }
 
-.section:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 25px 50px rgba(0,0,0,0.15);
-}
+        h1 {
+            font-size: 5vw;
+            text-align: center;
+            margin-bottom: 3vw;
+            font-weight: 600;
+        }
 
-.form-group { 
-    margin-bottom: 25px; 
-    position: relative;
-}
+        .section {
+            background: var(--card-bg);
+            padding: 3vw;
+            border-radius: 1.5vw;
+            margin-bottom: 3vw;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            animation: fadeIn 0.4s ease;
+            position: relative;
+            z-index: 1;
+        }
 
-label { 
-    display: block; 
-    margin-bottom: 10px; 
-    font-weight: 600;
-    color: var(--primary-color);
-    font-size: 0.95em;
-    letter-spacing: 0.8px;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
+        .form-group {
+            margin-bottom: 2.5vw;
+        }
 
-input, select { 
-    width: 100%; 
-    padding: 15px 20px; 
-    border: 2px solid #e4e2ff;
-    border-radius: 12px; 
-    font-size: 1em;
-    transition: all 0.3s ease;
-    background: rgba(255, 255, 255, 0.8);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.03);
-}
+        label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-color);
+            display: block;
+            margin-bottom: 1.5vw;
+        }
 
-input:focus, select:focus {
-    border-color: var(--secondary-color);
-    background: white;
-    box-shadow: 0 0 0 4px rgba(108, 93, 211, 0.15);
-}
+        input, select {
+            width: 100%;
+            padding: 2vw;
+            border: 1px solid var(--border-color);
+            border-radius: 1vw;
+            font-size: 0.9rem;
+            background: #fff;
+            box-shadow: inset 0 0.2vw 0.6vw rgba(0, 0, 0, 0.05);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
 
-button { 
-    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
-    color: white; 
-    padding: 16px 35px; 
-    border: none; 
-    border-radius: 12px; 
-    cursor: pointer; 
-    font-weight: 600;
-    letter-spacing: 0.8px;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.4vw rgba(26, 95, 60, 0.2);
+        }
 
-button::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(45deg, 
-        transparent 25%, 
-        rgba(255, 255, 255, 0.2) 50%, 
-        transparent 75%);
-    transform: rotate(45deg) translate(-20%, -20%);
-    transition: all 0.5s ease;
-}
+        button {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2vw 4vw;
+            border: none;
+            border-radius: 1vw;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 1.5vw;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
+            position: relative;
+            z-index: 2;
+            pointer-events: auto;
+        }
 
-button:hover { 
-    transform: translateY(-3px);
-    box-shadow: 0 15px 30px rgba(108, 93, 211, 0.3);
-}
+        button i {
+            font-size: 0.9rem;
+            color: var(--accent-color);
+        }
 
-button:hover::after {
-    animation: shine 1.5s forwards;
-}
+        button:hover:not(.loading) {
+            transform: translateY(-0.2vw);
+            box-shadow: 0 0.8vw 2.4vw rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+        }
 
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.4);
-}
+        button.loading {
+            cursor: not-allowed;
+            opacity: 0.7;
+            animation: pulse 1.5s infinite;
+            position: relative;
+            overflow: hidden;
+        }
 
-.modal-content {
-    background-color: #fefefe;
-    margin: 15% auto;
-    padding: 20px;
-    border-radius: 8px;
-    width: 50%;
-}
+        button.loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent 25%, rgba(255, 255, 255, 0.4) 50%, transparent 75%);
+            animation: loadingShine 1.5s infinite;
+        }
 
-.search-filters {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-}
+        .edit-btn, .delete-btn {
+            padding: 1vw 2vw;
+            font-size: 0.8rem;
+            line-height: 1;
+        }
 
-#correctionTable {
-    margin-top: 15px;
-}
+        .edit-btn i, .delete-btn i {
+            font-size: 0.8rem;
+            margin-right: 0;
+        }
 
-@keyframes shine {
-    100% {
-        transform: rotate(45deg) translate(20%, 20%);
-    }
-}
+        .tabcontent {
+            display: none;
+            flex: 1;
+        }
 
-.tab { 
-    border-radius: 15px;
-    background: var(--glass-bg);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.05);
-    backdrop-filter: blur(10px);
-    margin-bottom: 30px;
-}
+        .tabcontent.active {
+            display: block;
+        }
 
-.tab button { 
-    padding: 18px 40px; 
-    font-weight: 600;
-    color: #8c8aa7;
-    transition: all 0.3s ease;
-    background: none;
-    position: relative;
-    border-radius: 12px;
-}
+        .tab {
+            display: none;
+        }
 
-.tab button.active { 
-    color: var(--secondary-color);
-    background: rgba(108, 93, 211, 0.1);
-}
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            box-shadow: 0 -0.4vw 1.2vw rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-around;
+            padding: 2vw 0;
+            z-index: 1000;
+            border-top: 1px solid var(--border-color);
+        }
 
-.tab button.active::before {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 40%;
-    height: 3px;
-    background: var(--secondary-color);
-    border-radius: 2px;
-}
+        .bottom-nav button {
+            background: none;
+            color: var(--text-color);
+            padding: 2vw;
+            font-size: 0.8rem;
+            font-weight: 500;
+            flex: 1;
+            text-align: center;
+            border-radius: 0;
+            z-index: 2;
+            pointer-events: auto;
+        }
 
-.tabcontent { 
-    padding: 40px; 
-    background: var(--glass-bg);
-    border-radius: 20px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.05);
-    backdrop-filter: blur(10px);
-}
+        .bottom-nav button.active {
+            color: var(--accent-color);
+            background: rgba(107, 45, 45, 0.1);
+        }
 
-table { 
-    border-radius: 18px;
-    overflow: hidden;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-    background: white;
-}
+        .bottom-nav button i {
+            display: block;
+            font-size: 1.3rem;
+            margin-bottom: 0.8vw;
+        }
 
-th { 
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-    color: white;
-    font-weight: 600;
-    letter-spacing: 0.8px;
-    position: relative;
-}
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 1.5vw;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
 
-th::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: rgba(255, 255, 255, 0.2);
-}
+        th, td {
+            padding: 2vw;
+            text-align: left;
+            font-size: 0.9rem;
+        }
 
-tr:hover {
-    transform: scale(1.02);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-    transition: all 0.3s ease;
-}
+        th {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            font-weight: 500;
+            font-family: 'Playfair Display', serif;
+        }
 
-/* Floating Animation */
-@keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
+        tr:nth-child(even) {
+            background: rgba(242, 236, 228, 0.5);
+        }
 
-.section:hover {
-    animation: float 3s ease-in-out infinite;
-}
+        tr:hover {
+            background: rgba(107, 45, 45, 0.05);
+            transition: background 0.2s ease;
+        }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-    width: 8px;
-}
+        /* Pay Report Section - Default Size */
+        #payReport {
+            background: #fff;
+            border: 1px solid #ccc;
+            box-shadow: none;
+            border-radius: 0.5vw;
+        }
 
-::-webkit-scrollbar-track {
-    background: rgba(236, 240, 241, 0.5);
-}
+        #payReport th, #payReport td {
+            padding: 3vw;
+            font-size: 1rem;
+        }
 
-::-webkit-scrollbar-thumb {
-    background: var(--secondary-color);
-    border-radius: 4px;
-}
+        #payReport tr:nth-child(even) {
+            background: #f9f9f9;
+        }
 
-/* Checkbox styling */
-input[type="checkbox"] {
-    --webkit-appearance: none;
-    width: 24px;
-    height: 24px;
-    border: 2px solid #e4e2ff;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
+        #payReport tr:hover {
+            background: #f1f1f1;
+        }
 
-input[type="checkbox"]:checked {
-    background: var(--secondary-color);
-    border-color: var(--secondary-color);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
-}
+        .report-section h3 {
+            font-size: 1.1rem;
+            margin-bottom: 2vw;
+        }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    body {
-        padding: 20px;
-    }
-    
-    .section {
-        padding: 25px;
-        border-radius: 15px;
-    }
-    
-    button {
-        width: 100%;
-        padding: 18px;
-    }
-    
-    .tab button {
-        width: 100%;
-        margin-bottom: 5px;
-    }
-}
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--modal-bg);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
 
-/* Loading Animation */
-@keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
-}
+        .modal-content {
+            background: var(--card-bg);
+            padding: 3vw;
+            border-radius: 1.5vw;
+            width: 90%;
+            max-width: 80vw;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            animation: slideUp 0.3s ease;
+            z-index: 1001;
+        }
 
-.loading {
-    animation: pulse 1.5s infinite;
-    background: #f0f0f0 !important;
-    position: relative;
-    overflow: hidden;
-}
+        .close {
+            position: absolute;
+            top: 2vw;
+            right: 2vw;
+            font-size: 1.3rem;
+            cursor: pointer;
+            color: var(--text-color);
+            transition: color 0.2s ease;
+            z-index: 1002;
+            pointer-events: auto;
+        }
 
-.loading::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, 
-        transparent 25%, 
-        rgba(255,255,255,0.4) 50%, 
-        transparent 75%);
-    animation: loadingShine 1.5s infinite;
-}
+        .close:hover {
+            color: var(--accent-color);
+        }
 
-@keyframes loadingShine {
-    100% {
-        left: 200%;
-    }
-}
-</style>
+        .search-filters {
+            display: flex;
+            flex-direction: column;
+            gap: 2vw;
+        }
+
+        .date-range {
+            display: flex;
+            flex-direction: column;
+            gap: 2vw;
+        }
+
+        #workerMessage, #attendanceMessage {
+            margin-top: 2vw;
+            font-size: 0.9rem;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(5vw); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes loadingShine {
+            100% { left: 200%; }
+        }
+
+        /* Mobile Breakpoints */
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 6vw;
+            }
+
+            .section {
+                padding: 4vw;
+            }
+
+            button {
+                padding: 2.5vw 5vw;
+                font-size: 0.85rem;
+            }
+
+            input, select {
+                padding: 2.5vw;
+                font-size: 0.85rem;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            #payReport th, #payReport td {
+                padding: 3.5vw;
+                font-size: 0.95rem;
+            }
+
+            .modal-content {
+                width: 95%;
+                max-width: 90vw;
+                padding: 4vw;
+            }
+        }
+
+        @media (min-width: 481px) and (max-width: 767px) {
+            h1 {
+                font-size: 5.5vw;
+            }
+
+            .section {
+                padding: 3.5vw;
+            }
+
+            button {
+                padding: 2.2vw 4.5vw;
+                font-size: 0.9rem;
+            }
+
+            input, select {
+                padding: 2.2vw;
+                font-size: 0.9rem;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            #payReport th, #payReport td {
+                padding: 3.2vw;
+                font-size: 0.98rem;
+            }
+
+            .modal-content {
+                width: 92%;
+                max-width: 85vw;
+            }
+        }
+
+        @media (min-width: 768px) {
+            body {
+                padding: 3vw;
+            }
+
+            h1 {
+                font-size: 2.2rem;
+            }
+
+            .section {
+                padding: 3vw;
+            }
+
+            .search-filters, .date-range {
+                flex-direction: row;
+                gap: 2vw;
+            }
+
+            .bottom-nav {
+                display: none;
+            }
+
+            .tab {
+                display: flex;
+                gap: 1.5vw;
+                margin-bottom: 3vw;
+            }
+
+            .tab button {
+                background: var(--card-bg);
+                padding: 2vw 4vw;
+                border-radius: 1vw;
+                font-size: 0.95rem;
+                font-weight: 500;
+                color: var(--text-color);
+                box-shadow: var(--shadow);
+                border: 1px solid var(--border-color);
+                z-index: 2;
+                pointer-events: auto;
+            }
+
+            .tab button.active {
+                background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+                color: var(--accent-color);
+            }
+
+            table {
+                display: table;
+                overflow-x: visible;
+                white-space: normal;
+            }
+
+            #payReport th, #payReport td {
+                padding: 15px;
+                font-size: 1rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Worker Management System</h1>
+    <h1>RingRoad Site</h1>
 
     <div class="tab">
-        <button class="tablinks" onclick="openTab(event, 'manageWorkers')">Manage Workers</button>
-        <button class="tablinks" onclick="openTab(event, 'updateAttendance')">Update Attendance</button>
-        <button class="tablinks" onclick="openTab(event, 'viewReports')">View Reports</button>
+        <button class="tablinks" onclick="openTab(event, 'manageWorkers')"><i class="fas fa-users"></i> Manage Workers</button>
+        <button class="tablinks" onclick="openTab(event, 'updateAttendance')"><i class="fas fa-calendar-check"></i> Update Attendance</button>
+        <button class="tablinks" onclick="openTab(event, 'viewReports')"><i class="fas fa-chart-bar"></i> View Reports</button>
     </div>
 
-    <div id="manageWorkers" class="tabcontent">
+    <div id="manageWorkers" class="tabcontent section">
         <h2>Add/Update Worker</h2>
         <div class="form-group">
-            <label for="workerName">Worker Name:</label>
+            <label for="workerName"><i class="fas fa-user"></i> Worker Name:</label>
             <input type="text" id="workerName" required>
         </div>
         <div class="form-group">
-            <label for="payRate">Daily Pay Rate:</label>
+            <label for="payRate"><i class="fas fa-money-bill"></i> Daily Pay Rate:</label>
             <input type="number" id="payRate" required>
         </div>
-        <button onclick="handleWorkerSubmit()">Submit</button>
+        <button onclick="handleWorkerSubmit()"><i class="fas fa-save"></i> Submit</button>
         <div id="workerMessage"></div>
 
         <h2>Current Workers</h2>
@@ -362,89 +500,78 @@ input[type="checkbox"]:checked {
             <thead>
                 <tr>
                     <th>Name</th>
-                    <th>Daily Pay Rate</th>
+                    <th>Pay Rate</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody id="workersList"></tbody>
         </table>
     </div>
 
-    <div id="updateAttendance" class="tabcontent">
+    <div id="updateAttendance" class="tabcontent section">
         <h2>Update Attendance</h2>
         <div class="form-group">
-            <label for="attendanceDate">Date:</label>
+            <label for="attendanceDate"><i class="fas fa-calendar"></i> Date:</label>
             <input type="date" id="attendanceDate" required>
         </div>
         <div id="attendanceFields"></div>
-        <button onclick="submitAttendance()">Submit Attendance</button>
+        <button onclick="submitAttendance()"><i class="fas fa-check"></i> Submit Attendance</button>
         <div id="attendanceMessage"></div>
-    </div>
 
-    <div class="attendance-correction">
-        <h3>Correct Attendance</h3>
+        <h2>Correct Attendance</h2>
         <div class="search-filters">
-            <input type="date" id="correctionDate">
+            <input type="date" id="correctionDate" placeholder="Select date">
             <input type="text" id="searchWorker" placeholder="Search worker...">
         </div>
-        <button onclick="searchAttendance()">Search</button>
-        
+        <button onclick="searchAttendance()"><i class="fas fa-search"></i> Search</button>
+
         <table id="correctionTable">
             <thead>
                 <tr>
                     <th>Date</th>
                     <th>Worker</th>
-                    <th>Current Status</th>
+                    <th>Status</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody id="correctionData"></tbody>
         </table>
-        
-        <!-- Edit Modal -->
-        <div id="editModal" class="modal">
-            <div class="modal-content">
-                <span class="close" onclick="closeModal()">&times;</span>
-                <h4>Edit Attendance</h4>
-                <div id="modalContent"></div>
-            </div>
-        </div>
     </div>
 
-    <div id="viewReports" class="tabcontent">
+    <div id="viewReports" class="tabcontent section">
         <h2>Generate Reports</h2>
         <div class="date-range">
             <div class="form-group">
-                <label for="startDate">From:</label>
+                <label for="startDate"><i class="fas fa-calendar-alt"></i> From:</label>
                 <input type="date" id="startDate" required>
             </div>
             <div class="form-group">
-                <label for="endDate">To:</label>
+                <label for="endDate"><i class="fas fa-calendar-alt"></i> To:</label>
                 <input type="date" id="endDate" required>
             </div>
         </div>
-        <button onclick="refreshReports()">Generate Report</button>
-    
+        <button onclick="refreshReports()"><i class="fas fa-chart-line"></i> Generate Report</button>
+
         <div class="report-section">
             <h3>Pay Report</h3>
             <table id="payReport">
-              <thead>
-                  <tr>
-                      <th>Worker Name</th>
-                      <th>Total Days</th>
-                      <th>Total Pay</th>
-                  </tr>
-              </thead>
-              <tbody id="reportData"></tbody>
-              <!-- Add this tfoot section for the total -->
-              <tfoot>
-                  <tr id="totalRow" style="display: none;">
-                      <td colspan="2" style="text-align: right; font-weight: bold;">Total Amount:</td>
-                      <td id="totalAmountCell" style="font-weight: bold;"></td>
-                  </tr>
-              </tfoot>
-          </table>
+                <thead>
+                    <tr>
+                        <th>Worker Name</th>
+                        <th>Total Days</th>
+                        <th>Total Pay</th>
+                    </tr>
+                </thead>
+                <tbody id="reportData"></tbody>
+                <tfoot>
+                    <tr id="totalRow">
+                        <td colspan="2" style="text-align: right; font-weight: bold;">Total Amount:</td>
+                        <td id="totalAmountCell" style="font-weight: bold;"></td>
+                    </tr>
+                </tfoot>
+            </table>
         </div>
-    
+
         <div class="report-section">
             <h3>Attendance History</h3>
             <table id="attendanceHistory">
@@ -460,281 +587,398 @@ input[type="checkbox"]:checked {
         </div>
     </div>
 
-<script>
-  // Load initial data
-document.addEventListener('DOMContentLoaded', function() {
-    loadWorkers();
-    loadAttendanceWorkers();
-    refreshReports();
-    openTab(event, 'manageWorkers');
-});
+    <!-- Edit Attendance Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('editModal')">&times;</span>
+            <h4>Edit Attendance</h4>
+            <div id="modalContent"></div>
+        </div>
+    </div>
 
-function openTab(evt, tabName) {
-    var i, tabcontent, tablinks;
-    tabcontent = document.getElementsByClassName("tabcontent");
-    for (i = 0; i < tabcontent.length; i++) {
-        tabcontent[i].style.display = "none";
-    }
-    tablinks = document.getElementsByClassName("tablinks");
-    for (i = 0; i < tablinks.length; i++) {
-        tablinks[i].className = tablinks[i].className.replace(" active", "");
-    }
-    document.getElementById(tabName).style.display = "block";
-    evt.currentTarget.className += " active";
-}
+    <!-- Edit Worker Modal -->
+    <div id="editWorkerModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('editWorkerModal')">&times;</span>
+            <h4>Edit Worker</h4>
+            <div id="workerModalContent"></div>
+        </div>
+    </div>
 
-function handleWorkerSubmit() {
-    const name = document.getElementById('workerName').value;
-    const payRate = document.getElementById('payRate').value;
-    
-    google.script.run
-        .withSuccessHandler(() => {
-            document.getElementById('workerMessage').innerHTML = 
-                '<p style="color: green;">Worker updated successfully!</p>';
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <button class="tablinks" onclick="openTab(event, 'manageWorkers')"><i class="fas fa-users"></i> Workers</button>
+        <button class="tablinks" onclick="openTab(event, 'updateAttendance')"><i class="fas fa-calendar-check"></i> Attendance</button>
+        <button class="tablinks" onclick="openTab(event, 'viewReports')"><i class="fas fa-chart-bar"></i> Reports</button>
+    </div>
+
+    <script>
+        let currentEditRecord = null;
+        let currentEditWorker = null;
+
+        // Load initial data
+        document.addEventListener('DOMContentLoaded', function() {
             loadWorkers();
             loadAttendanceWorkers();
-        })
-        .withFailureHandler((error) => {
-            document.getElementById('workerMessage').innerHTML = 
-                `<p style="color: red;">Error: ${error.message}</p>`;
-        })
-        .addOrUpdateWorker(name, payRate);
-}
+            openTab({ currentTarget: document.querySelector('.bottom-nav .tablinks') }, 'manageWorkers');
+            const today = new Date();
+            document.getElementById('startDate').value = formatDate(today);
+            document.getElementById('endDate').value = formatDate(today);
+        });
 
-function loadWorkers() {
-    google.script.run
-        .withSuccessHandler((workers) => {
-            const tbody = document.getElementById('workersList');
-            tbody.innerHTML = workers.map(worker => `
-                <tr>
-                    <td>${worker[0]}</td>
-                    <td>${worker[1]}</td>
-                </tr>
-            `).join('');
-        })
-        .getWorkers();
-}
+        function openTab(evt, tabName) {
+            const tabcontent = document.getElementsByClassName("tabcontent");
+            for (let i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove('active');
+            }
+            const tablinks = document.getElementsByClassName("tablinks");
+            for (let i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+            document.getElementById(tabName).classList.add('active');
+            evt.currentTarget.classList.add("active");
+        }
 
-function loadAttendanceWorkers() {
-    google.script.run
-        .withSuccessHandler((workers) => {
-            const container = document.getElementById('attendanceFields');
-            container.innerHTML = workers.map(worker => `
+        function handleWorkerSubmit() {
+            const button = event.currentTarget;
+            button.classList.add('loading');
+            const name = document.getElementById('workerName').value;
+            const payRate = document.getElementById('payRate').value;
+
+            google.script.run
+                .withSuccessHandler(() => {
+                    document.getElementById('workerMessage').innerHTML = 
+                        '<p style="color: green;">Worker updated successfully!</p>';
+                    loadWorkers();
+                    loadAttendanceWorkers();
+                    button.classList.remove('loading');
+                })
+                .withFailureHandler((error) => {
+                    document.getElementById('workerMessage').innerHTML = 
+                        `<p style="color: red;">Error: ${error.message}</p>`;
+                    button.classList.remove('loading');
+                })
+                .addOrUpdateWorker(name, payRate);
+        }
+
+        function loadWorkers() {
+            google.script.run
+                .withSuccessHandler((workers) => {
+                    const tbody = document.getElementById('workersList');
+                    tbody.innerHTML = workers.map(worker => `
+                        <tr>
+                            <td>${worker[0]}</td>
+                            <td>₹${worker[1]}</td>
+                            <td>
+                                <button class="edit-btn" onclick="openEditWorkerModal('${worker[0]}', ${worker[1]})" title="Edit Worker"><i class="fas fa-edit"></i></button>
+                                <button class="delete-btn" onclick="deleteWorker('${worker[0]}')" title="Delete Worker"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `).join('');
+                })
+                .withFailureHandler(error => {
+                    alert('Error loading workers: ' + error.message);
+                })
+                .getWorkers();
+        }
+
+        function openEditWorkerModal(name, payRate) {
+            currentEditWorker = { originalName: name };
+            const modalContent = `
                 <div class="form-group">
-                    <label>${worker}:</label>
-                    <select class="attendance-select" data-worker="${worker}">
-                        <option value="">-</option>
-                        <option value="1.5">One And Half(1.5)</option>
-                        <option value="1">Present(1.0)</option>
-                        <option value="0.5">Half Day(0.5)</option>
-                        <option value="0">Absent(0)</option>
-                        <option value="2">Two Days(2.0)</option>
-                    </select>
+                    <label><i class="fas fa-user"></i> Worker Name:</label>
+                    <input type="text" id="editWorkerName" value="${name}">
                 </div>
-            `).join('');
-        })
-        .getWorkerNames();
-}
+                <div class="form-group">
+                    <label><i class="fas fa-money-bill"></i> Daily Pay Rate:</label>
+                    <input type="number" id="editPayRate" value="${payRate}">
+                </div>
+                <button onclick="saveWorkerChanges()"><i class="fas fa-save"></i> Save Changes</button>
+            `;
 
-function submitAttendance() {
-  const dateInput = document.getElementById('attendanceDate').value;
-  const dateObj = new Date(dateInput);  // Create proper Date object
-  
-  // Validate date
-  if (isNaN(dateObj.getTime())) {
-    alert('Invalid date format!');
-    return;
-  }
+            document.getElementById('workerModalContent').innerHTML = modalContent;
+            document.getElementById('editWorkerModal').style.display = 'flex';
+        }
 
-  const attendanceData = {};
-  document.querySelectorAll('.attendance-select').forEach(select => {
-    attendanceData[select.dataset.worker] = select.value;
-  });
+        function saveWorkerChanges() {
+            const button = event.currentTarget;
+            button.classList.add('loading');
+            const newName = document.getElementById('editWorkerName').value;
+            const newPayRate = document.getElementById('editPayRate').value;
 
-  google.script.run
-    .withSuccessHandler(() => {
-      document.getElementById('attendanceMessage').innerHTML = 
-        '<p style="color: green;">Attendance updated successfully!</p>';
-    })
-    .updateAttendance(dateObj.toISOString().split('T')[0], attendanceData); // Send ISO date string
-}
+            google.script.run
+                .withSuccessHandler(() => {
+                    alert('Worker updated successfully!');
+                    closeModal('editWorkerModal');
+                    loadWorkers();
+                    loadAttendanceWorkers();
+                    button.classList.remove('loading');
+                })
+                .withFailureHandler(error => {
+                    alert('Error: ' + error.message);
+                    button.classList.remove('loading');
+                })
+                .editWorker(currentEditWorker.originalName, newName, newPayRate);
+        }
 
-function isValidDate(d) {
-  return d instanceof Date && !isNaN(d);
-}
+        function deleteWorker(workerName) {
+            const button = event.currentTarget;
+            button.classList.add('loading');
+            if (confirm(`Are you sure you want to delete worker ${workerName}? Their attendance records will remain.`)) {
+                google.script.run
+                    .withSuccessHandler(() => {
+                        alert('Worker deleted successfully!');
+                        loadWorkers();
+                        loadAttendanceWorkers();
+                        button.classList.remove('loading');
+                    })
+                    .withFailureHandler(error => {
+                        alert('Error: ' + error.message);
+                        button.classList.remove('loading');
+                    })
+                .deleteWorker(workerName);
+            } else {
+                button.classList.remove('loading');
+            }
+        }
 
-// Update editRecord function
-function editRecord(dateString, worker, currentStatus) {
-  const dateObj = new Date(dateString);
-  if (!isValidDate(dateObj)) {
-    alert('Invalid date format in record!');
-    return;
-  }
-  
-  const newStatus = prompt(`Edit attendance for ${worker} on ${dateObj.toDateString()}...`, currentStatus);
-}
+        function loadAttendanceWorkers() {
+            google.script.run
+                .withSuccessHandler((workers) => {
+                    const container = document.getElementById('attendanceFields');
+                    container.innerHTML = workers.map(worker => `
+                        <div class="form-group">
+                            <label>${worker}:</label>
+                            <select class="attendance-select" data-worker="${worker}">
+                                <option value="">-</option>
+                                <option value="1.5">One And Half (1.5)</option>
+                                <option value="1">Present (1.0)</option>
+                                <option value="0.5">Half Day (0.5)</option>
+                                <option value="0">Absent (0)</option>
+                                <option value="2">Two Days (2.0)</option>
+                            </select>
+                        </div>
+                    `).join('');
+                })
+                .withFailureHandler(error => {
+                    alert('Error loading attendance workers: ' + error.message);
+                })
+                .getWorkerNames();
+        }
 
-let currentEditRecord = null;
+        function submitAttendance() {
+            const button = event.currentTarget;
+            button.classList.add('loading');
+            const dateInput = document.getElementById('attendanceDate').value;
+            const dateObj = new Date(dateInput);
 
-function searchAttendance() {
-  const date = document.getElementById('correctionDate').value;
-  const worker = document.getElementById('searchWorker').value;
-  
-  google.script.run
-    .withSuccessHandler(displayCorrectionData)
-    .getAttendanceRecords(date, worker);
-}
-
-function displayCorrectionData(records) {
-  const tbody = document.getElementById('correctionData');
-  tbody.innerHTML = records.map(record => `
-    <tr>
-      <td>${record.date}</td>
-      <td>${record.worker}</td>
-      <td>${getStatusText(record.status)}</td>
-      <td>
-        <button class="edit-btn" onclick="openEditModal('${record.date}', '${record.worker}', ${record.status})">Edit</button>
-        <button class="delete-btn" onclick="deleteRecord('${record.date}', '${record.worker}')">Delete</button>
-      </td>
-    </tr>
-  `).join('');
-}
-
-function openEditModal(date, worker, currentStatus) {
-  currentEditRecord = { date, worker };
-  const modalContent = `
-    <p><strong>Date:</strong> ${date}</p>
-    <p><strong>Worker:</strong> ${worker}</p>
-    <div class="form-group">
-      <label>New Status:</label>
-      <select id="newStatus">
-        <option value="2" ${currentStatus == 2 ? 'selected' : ''}>Two Days</option>
-        <option value="1.5" ${currentStatus == 1.5 ? 'selected' : ''}>One and Half</option>
-        <option value="1" ${currentStatus == 1 ? 'selected' : ''}>Present</option>
-        <option value="0.5" ${currentStatus == 0.5 ? 'selected' : ''}>Half Day</option>
-        <option value="0" ${currentStatus == 0 ? 'selected' : ''}>Absent</option>
-      </select>
-    </div>
-    <button onclick="saveAttendanceChanges()">Save Changes</button>
-  `;
-  
-  document.getElementById('modalContent').innerHTML = modalContent;
-  document.getElementById('editModal').style.display = 'block';
-}
-
-function saveAttendanceChanges() {
-  const newStatus = document.getElementById('newStatus').value;
-  
-  google.script.run
-    .withSuccessHandler(() => {
-      alert('Attendance updated successfully!');
-      closeModal();
-      searchAttendance();
-    })
-    .withFailureHandler(error => alert('Error: ' + error.message))
-    .updateAttendanceRecord(currentEditRecord.date, currentEditRecord.worker, newStatus);
-}
-
-function deleteRecord(date, worker) {
-  if(confirm(`Are you sure you want to delete this record for ${worker} on ${date}?`)) {
-    google.script.run
-      .withSuccessHandler(() => {
-        alert('Record deleted successfully!');
-        searchAttendance();
-      })
-      .withFailureHandler(error => alert('Error: ' + error.message))
-      .deleteAttendanceRecord(date, worker);
-  }
-}
-
-function closeModal() {
-  document.getElementById('editModal').style.display = 'none';
-  currentEditRecord = null;
-}
-
-function refreshReports() {
-    const startDate = document.getElementById('startDate').value;
-    const endDate = document.getElementById('endDate').value;
-    
-    if (!startDate || !endDate) {
-        alert('Please select both start and end dates');
-        return;
-    }
-
-    google.script.run
-        .withSuccessHandler((data) => {
-            // Clear previous data
-            const reportBody = document.getElementById('reportData');
-            reportBody.innerHTML = '';
-            
-            // Check if data exists
-            if (!data.reportData || data.reportData.length === 0) {
-                reportBody.innerHTML = '<tr><td colspan="3">No data found</td></tr>';
+            if (isNaN(dateObj.getTime())) {
+                alert('Invalid date format!');
+                button.classList.remove('loading');
                 return;
             }
 
-             // Populate new data
-             data.reportData.forEach(row => {
-                reportBody.innerHTML += `
-                <tr>
-                    <td>${row.name}</td>
-                    <td>${row.days}</td>
-                    <td>₹${row.pay.toFixed(2)}</td>
-                </tr>
-                `;
+            const attendanceData = {};
+            document.querySelectorAll('.attendance-select').forEach(select => {
+                attendanceData[select.dataset.worker] = select.value;
             });
 
-             // Update total amount display
-             if (data.totalAmount !== undefined) {
-                const totalRow = `<tr class="total-row">
-                    <td colspan="2">Total Amount</td>
-                    <td>₹${data.totalAmount.toFixed(2)}</td>
-                </tr>`;
-                reportBody.innerHTML += totalRow;
-            }
+            google.script.run
+                .withSuccessHandler(() => {
+                    document.getElementById('attendanceMessage').innerHTML = 
+                        '<p style="color: green;">Attendance updated successfully!</p>';
+                    button.classList.remove('loading');
+                })
+                .withFailureHandler(error => {
+                    document.getElementById('attendanceMessage').innerHTML = 
+                        `<p style="color: red;">Error: ${error.message}</p>`;
+                    button.classList.remove('loading');
+                })
+                .updateAttendance(dateObj.toISOString().split('T')[0], attendanceData);
+        }
 
-            // Update attendance history
-            const historyBody = document.getElementById('attendanceHistoryData');
-            historyBody.innerHTML = data.attendanceHistory.map(entry => `
+        function isValidDate(d) {
+            return d instanceof Date && !isNaN(d);
+        }
+
+        function searchAttendance() {
+            const button = event.currentTarget;
+            button.classList.add('loading');
+            const date = document.getElementById('correctionDate').value;
+            const worker = document.getElementById('searchWorker').value;
+
+            google.script.run
+                .withSuccessHandler(displayCorrectionData)
+                .withFailureHandler(error => {
+                    alert('Error searching attendance: ' + error.message);
+                    button.classList.remove('loading');
+                })
+                .getAttendanceRecords(date, worker);
+        }
+
+        function displayCorrectionData(records) {
+            const tbody = document.getElementById('correctionData');
+            tbody.innerHTML = records.map(record => `
                 <tr>
-                    <td>${entry.date}</td>
-                    <td>${entry.worker}</td>
-                    <td>${getStatusText(entry.status)}</td>
+                    <td>${record.date}</td>
+                    <td>${record.worker}</td>
+                    <td>${getStatusText(record.status)}</td>
+                    <td>
+                        <button class="edit-btn" onclick="openEditModal('${record.date}', '${record.worker}', ${record.status})" title="Edit Attendance"><i class="fas fa-edit"></i></button>
+                        <button class="delete-btn" onclick="deleteRecord('${record.date}', '${record.worker}')" title="Delete Attendance"><i class="fas fa-trash"></i></button>
+                    </td>
                 </tr>
             `).join('');
-            
-        })
-        .withFailureHandler((error) => {
-            alert('Error generating report: ' + error.message);
-        })
-        .calculateTotalPay(startDate, endDate);
-}
+            document.querySelector('.search-filters button').classList.remove('loading');
+        }
 
-// Helper function to convert status codes to text
-function getStatusText(status) {
-    const statusMap = {
-        '0': 'Absent',
-        '0.5': 'Half Day',
-        '1': 'Present',
-        '1.5': 'One and Half',
-        '2': 'Two Days'
-    };
-    return statusMap[status] || 'Unknown';
-}
+        function openEditModal(date, worker, currentStatus) {
+            currentEditRecord = { date, worker };
+            const modalContent = `
+                <p><strong>Date:</strong> ${date}</p>
+                <p><strong>Worker:</strong> ${worker}</p>
+                <div class="form-group">
+                    <label>New Status:</label>
+                    <select id="newStatus">
+                        <option value="2" ${currentStatus == 2 ? 'selected' : ''}>Two Days</option>
+                        <option value="1.5" ${currentStatus == 1.5 ? 'selected' : ''}>One and Half</option>
+                        <option value="1" ${currentStatus == 1 ? 'selected' : ''}>Present</option>
+                        <option value="0.5" ${currentStatus == 0.5 ? 'selected' : ''}>Half Day</option>
+                        <option value="0" ${currentStatus == 0 ? 'selected' : ''}>Absent</option>
+                    </select>
+                </div>
+                <button onclick="saveAttendanceChanges()"><i class="fas fa-save"></i> Save Changes</button>
+            `;
 
-// Add this to DOMContentLoaded initialization
-document.addEventListener('DOMContentLoaded', function() {
-    // Set default dates to current month
-    const today = new Date();
-    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-    
-    document.getElementById('startDate').value = formatDate(today);
-    document.getElementById('endDate').value = formatDate(today);
-});
+            document.getElementById('modalContent').innerHTML = modalContent;
+            document.getElementById('editModal').style.display = 'flex';
+        }
 
-function formatDate(date) {
-    return date.toISOString().split('T')[0];
-}
-</script>
+        function saveAttendanceChanges() {
+            const button = event.currentTarget;
+            button.classList.add('loading');
+            const newStatus = document.getElementById('newStatus').value;
+
+            google.script.run
+                .withSuccessHandler(() => {
+                    alert('Attendance updated successfully!');
+                    closeModal('editModal');
+                    searchAttendance();
+                    button.classList.remove('loading');
+                })
+                .withFailureHandler(error => {
+                    alert('Error: ' + error.message);
+                    button.classList.remove('loading');
+                })
+                .updateAttendanceRecord(currentEditRecord.date, currentEditRecord.worker, newStatus);
+        }
+
+        function deleteRecord(date, worker) {
+            const button = event.currentTarget;
+            button.classList.add('loading');
+            if (confirm(`Are you sure you want to delete this record for ${worker} on ${date}?`)) {
+                google.script.run
+                    .withSuccessHandler(() => {
+                        alert('Record deleted successfully!');
+                        searchAttendance();
+                        button.classList.remove('loading');
+                    })
+                    .withFailureHandler(error => {
+                        alert('Error: ' + error.message);
+                        button.classList.remove('loading');
+                    })
+                .deleteAttendanceRecord(date, worker);
+            } else {
+                button.classList.remove('loading');
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            if (modalId === 'editModal') {
+                currentEditRecord = null;
+            } else if (modalId === 'editWorkerModal') {
+                currentEditWorker = null;
+            }
+        }
+
+        function refreshReports() {
+            const button = event.currentTarget;
+            button.classList.add('loading');
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            if (!startDate || !endDate) {
+                alert('Please select both start and end dates');
+                button.classList.remove('loading');
+                return;
+            }
+
+            google.script.run
+                .withSuccessHandler((data) => {
+                    const reportBody = document.getElementById('reportData');
+                    reportBody.innerHTML = '';
+                    const totalAmountCell = document.getElementById('totalAmountCell');
+
+                    if (data.error) {
+                        reportBody.innerHTML = `<tr><td colspan="3">Error: ${data.error}</td></tr>`;
+                        totalAmountCell.innerHTML = '';
+                        button.classList.remove('loading');
+                        return;
+                    }
+
+                    if (!data.reportData || data.reportData.length === 0) {
+                        reportBody.innerHTML = '<tr><td colspan="3">No data found</td></tr>';
+                        totalAmountCell.innerHTML = '';
+                    } else {
+                        data.reportData.forEach(row => {
+                            reportBody.innerHTML += `
+                                <tr>
+                                    <td>${row.name}</td>
+                                    <td>${row.days}</td>
+                                    <td>₹${row.pay.toFixed(2)}</td>
+                                </tr>
+                            `;
+                        });
+                        totalAmountCell.innerHTML = `₹${data.totalAmount.toFixed(2)}`;
+                    }
+
+                    const historyBody = document.getElementById('attendanceHistoryData');
+                    historyBody.innerHTML = data.attendanceHistory.map(entry => `
+                        <tr>
+                            <td>${entry.date}</td>
+                            <td>${entry.worker}</td>
+                            <td>${getStatusText(entry.status)}</td>
+                        </tr>
+                    `).join('');
+
+                    document.getElementById('totalRow').style.display = data.reportData.length > 0 ? 'table-row' : 'none';
+                    button.classList.remove('loading');
+                })
+                .withFailureHandler(error => {
+                    alert('Error generating report: ' + error.message);
+                    document.getElementById('reportData').innerHTML = '<tr><td colspan="3">Error generating report</td></tr>';
+                    document.getElementById('totalAmountCell').innerHTML = '';
+                    document.getElementById('totalRow').style.display = 'none';
+                    button.classList.remove('loading');
+                })
+                .calculateTotalPay(startDate, endDate);
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                '0': 'Absent',
+                '0.5': 'Half Day',
+                '1': 'Present',
+                '1.5': 'One and Half',
+                '2': 'Two Days'
+            };
+            return statusMap[status] || 'Unknown';
+        }
+
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+    </script>
 </body>
 </html>
